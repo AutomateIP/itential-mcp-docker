@@ -1,0 +1,22 @@
+services:
+
+  # Clone the itential-mcp repo to the same directory where this compose will live
+  # Server URL: http://localhost:8000/sse from local or http://itential-mcp:8000 from other docker containers
+  itential-mcp:
+    build:
+      context: ./itential-mcp
+      dockerfile: Containerfile
+    ports:
+      - "8000:8000"
+    environment:
+      ITENTIAL_MCP_TRANSPORT: "sse"
+      ITENTIAL_MCP_HOST: ${ITENTIAL_MCP_HOST}
+      ITENTIAL_MCP_PORT: ${ITENTIAL_MCP_PORT}
+      ITENTIAL_MCP_PLATFORM_HOST: ${ITENTIAL_MCP_PLATFORM_HOST}
+      ITENTIAL_MCP_PLATFORM_PORT: ${ITENTIAL_MCP_PLATFORM_PORT}
+      ITENTIAL_MCP_PLATFORM_DISABLE_VERIFY: ${ITENTIAL_MCP_PLATFORM_DISABLE_VERIFY}
+      ITENTIAL_MCP_PLATFORM_CLIENT_ID: ${ITENTIAL_MCP_PLATFORM_CLIENT_ID}
+      ITENTIAL_MCP_PLATFORM_CLIENT_SECRET: ${ITENTIAL_MCP_PLATFORM_CLIENT_SECRET}
+      ITENTIAL_MCP_PLATFORM_LOG_LEVEL: ${ITENTIAL_MCP_PLATFORM_LOG_LEVEL}
+      #ITENTIAL_MCP_SERVER_INCLUDE_TAGS: ${ITENTIAL_MCP_SERVER_INCLUDE_TAGS}
+      #ITENTIAL_MCP_SERVER_EXCLUDE_TAGS: ${#ITENTIAL_MCP_SERVER_EXCLUDE_TAGS}
