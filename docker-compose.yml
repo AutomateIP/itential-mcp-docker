@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # Itential MCP Server
   # Provides Model Context Protocol server for LLM integration with Itential Platform
-  # Server URL: http://localhost:8000/sse (external) or http://itential-mcp:8000/sse (internal)
+  # Server URL: http://localhost:8000/mcp (external) or http://itential-mcp:8000/mcp (internal)
   itential-mcp:
     build:
       context: ../itential-mcp
@@ -11,34 +11,14 @@ services:
     container_name: itential-mcp-server
     ports:
       - "${ITENTIAL_MCP_PORT:-8000}:8000"
+    volumes:
+      - ./itential-mcp.conf:/app/itential-mcp.conf:ro
     environment:
-      # Server Configuration
-      ITENTIAL_MCP_SERVER_TRANSPORT: "${ITENTIAL_MCP_SERVER_TRANSPORT:-sse}"
-      ITENTIAL_MCP_SERVER_HOST: "${ITENTIAL_MCP_SERVER_HOST:-0.0.0.0}"
-      ITENTIAL_MCP_SERVER_PORT: "${ITENTIAL_MCP_SERVER_PORT:-8000}"
-      ITENTIAL_MCP_SERVER_LOG_LEVEL: "${ITENTIAL_MCP_SERVER_LOG_LEVEL:-INFO}"
-      
-      # Tool Filtering (optional)
-      ITENTIAL_MCP_SERVER_INCLUDE_TAGS: "${ITENTIAL_MCP_SERVER_INCLUDE_TAGS:-}"
-      ITENTIAL_MCP_SERVER_EXCLUDE_TAGS: "${ITENTIAL_MCP_SERVER_EXCLUDE_TAGS:-experimental,beta}"
-      
-      # Itential Platform Connection
-      ITENTIAL_MCP_PLATFORM_HOST: "${ITENTIAL_MCP_PLATFORM_HOST}"
-      ITENTIAL_MCP_PLATFORM_PORT: "${ITENTIAL_MCP_PLATFORM_PORT:-0}"
-      ITENTIAL_MCP_PLATFORM_DISABLE_TLS: "${ITENTIAL_MCP_PLATFORM_DISABLE_TLS:-false}"
-      ITENTIAL_MCP_PLATFORM_DISABLE_VERIFY: "${ITENTIAL_MCP_PLATFORM_DISABLE_VERIFY:-false}"
-      ITENTIAL_MCP_PLATFORM_TIMEOUT: "${ITENTIAL_MCP_PLATFORM_TIMEOUT:-30}"
-      
-      # Authentication - OAuth (recommended)
-      ITENTIAL_MCP_PLATFORM_CLIENT_ID: "${ITENTIAL_MCP_PLATFORM_CLIENT_ID}"
-      ITENTIAL_MCP_PLATFORM_CLIENT_SECRET: "${ITENTIAL_MCP_PLATFORM_CLIENT_SECRET}"
-      
-      # Authentication - Basic Auth (alternative)
-      ITENTIAL_MCP_PLATFORM_USER: "${ITENTIAL_MCP_PLATFORM_USER:-}"
-      ITENTIAL_MCP_PLATFORM_PASSWORD: "${ITENTIAL_MCP_PLATFORM_PASSWORD:-}"
+      # Configuration file path
+      ITENTIAL_MCP_CONFIG: "/app/itential-mcp.conf"
     
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/mcp/health"]
       interval: 30s
       timeout: 10s
       retries: 3

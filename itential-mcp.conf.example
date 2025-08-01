@@ -1,0 +1,353 @@
+# =============================================================================
+# Itential MCP Server Configuration File - Example
+# =============================================================================
+# This is an example configuration file for the Itential MCP server that
+# shows all available configuration options with detailed descriptions.
+# 
+# Configuration options are grouped into sections and can be overridden using
+# environment variables prefixed with ITENTIAL_MCP_<SECTION>_<OPTION>.
+#
+# Copy this file to itential-mcp.conf and modify the values according to your 
+# environment needs. Uncomment (remove #) from any option you want to customize.
+# =============================================================================
+
+# =============================================================================
+# SERVER CONFIGURATION
+# =============================================================================
+# The [server] section handles configuration options for running the MCP server.
+# All options in this section can be overridden using environment variables
+# prefixed with ITENTIAL_MCP_SERVER_
+
+[server]
+
+# Transport protocol for the MCP server
+# Configures how the MCP server communicates with clients.
+# 
+# Valid options:
+#   - stdio: Standard input/output (default, best for CLI tools)
+#   - sse: Server-Sent Events over HTTP (best for web applications)
+#   - streamable-http: HTTP-based transport (alternative web option)
+#
+# Default: stdio
+# Environment variable: ITENTIAL_MCP_SERVER_TRANSPORT
+#
+transport = stdio
+
+# Server host address
+# Sets the IP address the server will bind to when using sse or streamable-http transport.
+# Use 0.0.0.0 to listen on all interfaces, 127.0.0.1 for localhost only.
+# This option is ignored when transport is set to stdio.
+#
+# Default: 127.0.0.1
+# Environment variable: ITENTIAL_MCP_SERVER_HOST
+#
+host = 0.0.0.0
+
+# Server port
+# Sets the port number the server will listen on when using sse or streamable-http transport.
+# Choose a port that doesn't conflict with other services.
+# This option is ignored when transport is set to stdio.
+#
+# Default: 8000
+# Environment variable: ITENTIAL_MCP_SERVER_PORT
+#
+port = 8000
+
+# Server path
+# Configures the URL path for the server to accept client requests.
+# This path is appended to the host:port to create the full URL.
+# Example: http://localhost:8000/mcp
+#
+# Default: /mcp
+# Environment variable: ITENTIAL_MCP_SERVER_PATH
+#
+path = /mcp
+
+# Logging level
+# Controls the verbosity of log output from the MCP server.
+# Higher levels include all lower level messages.
+#
+# Valid options:
+#   - DEBUG: Detailed debugging information
+#   - INFO: General information messages (recommended)
+#   - WARNING: Warning messages only
+#   - ERROR: Error messages only
+#   - CRITICAL: Critical error messages only
+#
+# Default: INFO
+# Environment variable: ITENTIAL_MCP_SERVER_LOG_LEVEL
+#
+log_level = INFO
+
+# Include tags
+# Comma-separated list of tags to include when starting the server.
+# Only tools with at least one of these tags will be available.
+# Leave empty or comment out to include all tools (except excluded ones).
+#
+# Examples:
+#   - Include only specific tools: "get_devices,get_workflows"
+#   - Include tool categories: "devices,workflows,compliance"
+#   - Include stability levels: "stable,production"
+#
+# Default: null (include all)
+# Environment variable: ITENTIAL_MCP_SERVER_INCLUDE_TAGS
+#
+# include_tags = get_health,restart_application,start_application,stop_application
+include_tags = 
+
+# Exclude tags
+# Comma-separated list of tags to exclude when starting the server.
+# Tools with any of these tags will not be available to clients.
+# This is processed after include_tags.
+#
+# Common exclusions:
+#   - experimental: Tools in experimental phase
+#   - beta: Tools in beta testing
+#   - deprecated: Tools scheduled for removal
+#   - dangerous: Tools that could cause system damage
+#
+# Default: experimental,beta
+# Environment variable: ITENTIAL_MCP_SERVER_EXCLUDE_TAGS
+#
+exclude_tags = experimental,beta
+
+# =============================================================================
+# ITENTIAL PLATFORM CONNECTION
+# =============================================================================
+# The [platform] section handles configuration options for connecting to an
+# Itential Platform instance. All options can be overridden using environment
+# variables prefixed with ITENTIAL_MCP_PLATFORM_
+
+[platform]
+
+# Platform hostname or IP address
+# The hostname or IP address of your Itential Platform server.
+# This is the primary endpoint the MCP server will connect to.
+#
+# Examples:
+#   - localhost (for local development)
+#   - platform.company.com (production FQDN)
+#   - 192.168.1.100 (IP address)
+#   - host.docker.internal (Docker development)
+#
+# Default: localhost
+# Environment variable: ITENTIAL_MCP_PLATFORM_HOST
+#
+host = your-platform-host.com
+
+# Platform port
+# The port number to use when connecting to Itential Platform.
+# Set to 0 for automatic port detection based on TLS settings:
+#   - When disable_tls = false: uses port 443 (HTTPS)
+#   - When disable_tls = true: uses port 80 (HTTP)
+#
+# Common ports:
+#   - 443: HTTPS (production)
+#   - 80: HTTP (development)
+#   - 3000: Common development port
+#   - 8080: Alternative HTTP port
+#
+# Default: 0 (auto-detect)
+# Environment variable: ITENTIAL_MCP_PLATFORM_PORT
+#
+port = 0
+
+# Disable TLS/SSL
+# Controls whether to use HTTPS (false) or HTTP (true) when connecting.
+# Set to true only for development environments or when TLS is terminated
+# by a load balancer or reverse proxy.
+#
+# Security note: Never set to true in production environments with
+# sensitive data unless TLS is handled by infrastructure components.
+#
+# Default: false (use HTTPS)
+# Environment variable: ITENTIAL_MCP_PLATFORM_DISABLE_TLS
+#
+disable_tls = false
+
+# Disable certificate verification
+# Controls whether to verify SSL/TLS certificates when connecting.
+# Set to true only when using self-signed certificates or in development.
+# This option is ignored when disable_tls = true.
+#
+# Security warning: Setting this to true in production environments
+# makes connections vulnerable to man-in-the-middle attacks.
+#
+# Default: false (verify certificates)
+# Environment variable: ITENTIAL_MCP_PLATFORM_DISABLE_VERIFY
+#
+disable_verify = false
+
+# Connection timeout
+# Maximum time in seconds to wait for API responses from Itential Platform.
+# Increase this value for slow networks or heavily loaded systems.
+# Decrease for faster failure detection in high-availability setups.
+#
+# Recommended values:
+#   - 10-15 seconds: Fast networks, quick failure detection
+#   - 30 seconds: Standard networks (default)
+#   - 60+ seconds: Slow networks or complex operations
+#
+# Default: 30
+# Environment variable: ITENTIAL_MCP_PLATFORM_TIMEOUT
+#
+timeout = 30
+
+# =============================================================================
+# AUTHENTICATION - OAUTH (RECOMMENDED)
+# =============================================================================
+# OAuth authentication provides better security and is the recommended
+# authentication method for production environments.
+
+# OAuth Client ID
+# The client identifier obtained when creating a service account in
+# Itential Platform. This is used for OAuth 2.0 authentication.
+# If both client_id and client_secret are provided, OAuth will be used
+# instead of basic authentication.
+#
+# To obtain OAuth credentials:
+# 1. Log into Itential Platform as an administrator
+# 2. Navigate to Administration > Service Accounts
+# 3. Create a new service account
+# 4. Copy the generated client_id and client_secret
+#
+# Default: null
+# Environment variable: ITENTIAL_MCP_PLATFORM_CLIENT_ID
+#
+client_id = your-oauth-client-id
+
+# OAuth Client Secret
+# The client secret obtained when creating a service account in
+# Itential Platform. Keep this value secure and never commit it to
+# version control systems.
+#
+# Security best practices:
+# - Store in environment variables or secure configuration management
+# - Rotate regularly according to your security policy
+# - Limit service account permissions to minimum required
+#
+# Default: null
+# Environment variable: ITENTIAL_MCP_PLATFORM_CLIENT_SECRET
+#
+client_secret = your-oauth-client-secret
+
+# =============================================================================
+# AUTHENTICATION - BASIC AUTH (ALTERNATIVE)
+# =============================================================================
+# Basic authentication using username/password. Use only when OAuth is not
+# available or for development environments.
+
+# Username
+# Username for basic authentication to Itential Platform.
+# This option is ignored if OAuth credentials (client_id/client_secret) are provided.
+# 
+# Security note: Basic auth credentials are less secure than OAuth.
+# Use OAuth in production environments when possible.
+#
+# Default: admin
+# Environment variable: ITENTIAL_MCP_PLATFORM_USER
+#
+# user = admin
+
+# Password
+# Password for basic authentication to Itential Platform.
+# This option is ignored if OAuth credentials are provided.
+#
+# Security best practices:
+# - Use strong, unique passwords
+# - Store in environment variables, not in configuration files
+# - Change default passwords immediately
+# - Consider using OAuth instead for better security
+#
+# Default: admin
+# Environment variable: ITENTIAL_MCP_PLATFORM_PASSWORD
+#
+# password = admin
+
+# =============================================================================
+# EXAMPLE CONFIGURATIONS
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Development Environment Example
+# -----------------------------------------------------------------------------
+# Typical configuration for local development with Itential Platform
+# running on the same machine or in a local Docker environment.
+#
+# [server]
+# transport = streamable-http
+# host = 127.0.0.1
+# port = 8000
+# log_level = DEBUG
+# exclude_tags = deprecated
+#
+# [platform]
+# host = localhost
+# port = 3000
+# disable_tls = true
+# disable_verify = true
+# user = admin
+# password = admin
+# timeout = 60
+
+# -----------------------------------------------------------------------------
+# Production Environment Example
+# -----------------------------------------------------------------------------
+# Secure configuration for production deployment with OAuth authentication
+# and proper TLS settings.
+#
+# [server]
+# transport = streamable-http
+# host = 0.0.0.0
+# port = 8000
+# log_level = INFO
+# exclude_tags = experimental,beta,deprecated
+#
+# [platform]
+# host = platform.company.com
+# port = 443
+# disable_tls = false
+# disable_verify = false
+# client_id = your-production-client-id
+# client_secret = your-production-client-secret
+# timeout = 30
+
+# -----------------------------------------------------------------------------
+# Docker Environment Example
+# -----------------------------------------------------------------------------
+# Configuration for running in Docker containers with service discovery.
+#
+# [server]
+# transport = streamable-http
+# host = 0.0.0.0
+# port = 8000
+# log_level = INFO
+#
+# [platform]
+# host = host.docker.internal
+# port = 3000
+# disable_tls = true
+# user = admin
+# password = admin
+
+# -----------------------------------------------------------------------------
+# High-Security Environment Example
+# -----------------------------------------------------------------------------
+# Configuration for environments with strict security requirements.
+#
+# [server]
+# transport = streamable-http
+# host = 127.0.0.1
+# port = 8000
+# log_level = WARNING
+# include_tags = stable,production
+# exclude_tags = experimental,beta,deprecated,dangerous
+#
+# [platform]
+# host = secure-platform.company.com
+# port = 443
+# disable_tls = false
+# disable_verify = false
+# client_id = secure-client-id
+# client_secret = secure-client-secret
+# timeout = 15
