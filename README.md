@@ -1,8 +1,8 @@
-# 🐳 Itential MCP Server - Docker Deployment (SSE Transport)
+# 🐳 Itential MCP Server - Docker Deployment (Streamable HTTP Transport)
 
-This directory contains Docker Compose configuration for deploying the Itential MCP Server in a containerized environment using **Server-Sent Events (SSE)** transport.
+This directory contains Docker Compose configuration for deploying the Itential MCP Server in a containerized environment using **Streamable HTTP** transport.
 
-> **Note**: The Itential MCP Server supports multiple transport methods (stdio, SSE, streamable-http). This Docker setup is optimized for **SSE transport** which is ideal for containerized deployments and web-based integrations. For stdio transport, see the [main documentation](../README.md).
+> **Note**: The Itential MCP Server supports multiple transport methods (stdio, sse, streamable-http). This Docker setup is optimized for **streamable-http transport** which is ideal for containerized deployments and web-based integrations. For stdio transport, see the [main documentation](../README.md).
 
 ## 📋 Prerequisites
 
@@ -16,32 +16,26 @@ This directory contains Docker Compose configuration for deploying the Itential 
 ### 1. Clone and Setup
 
 ```bash
-# Clone the itential-mcp repository
-git clone https://github.com/itential/itential-mcp.git
-```
-
-### 1. Clone and Setup
-
-```bash
 # Clone the repository
 git clone https://github.com/itential/itential-mcp.git
-cd itential-mcp/docker
+cd itential-mcp/itential-mcp-docker
 
-# Copy environment template
-cp .env.example .env
+# Copy configuration template
+cp itential-mcp.conf.example itential-mcp.conf
 ```
 
-### 2. Configure Environment
+### 2. Configure Server
 
-Edit the `.env` file with your Itential Platform details:
+Edit the `itential-mcp.conf` file with your Itential Platform details:
 
-```bash
+```ini
+[platform]
 # Required: Itential Platform connection
-ITENTIAL_MCP_PLATFORM_HOST=your-platform-host.com
+host = your-platform-host.com
 
 # Required: Authentication (choose OAuth or Basic Auth)
-ITENTIAL_MCP_PLATFORM_CLIENT_ID=your-oauth-client-id
-ITENTIAL_MCP_PLATFORM_CLIENT_SECRET=your-oauth-client-secret
+client_id = your-oauth-client-id
+client_secret = your-oauth-client-secret
 ```
 
 ### 3. Deploy
@@ -54,62 +48,87 @@ docker-compose up -d
 docker-compose logs -f itential-mcp
 
 # Check health
-curl http://localhost:8000/health
+curl http://localhost:8000/mcp/health
 ```
 
 ## 🔧 Configuration Options
 
+The server is configured using the `itential-mcp.conf` configuration file. All options can also be overridden using environment variables.
+
 ### Server Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ITENTIAL_MCP_SERVER_TRANSPORT` | `sse` | Transport protocol (stdio, sse, streamable-http) |
-| `ITENTIAL_MCP_SERVER_HOST` | `0.0.0.0` | Server bind address |
-| `ITENTIAL_MCP_SERVER_PORT` | `8000` | Internal server port |
-| `ITENTIAL_MCP_PORT` | `8000` | External Docker port mapping |
-| `ITENTIAL_MCP_SERVER_LOG_LEVEL` | `INFO` | Logging level |
+Configure in the `[server]` section of `itential-mcp.conf`:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `transport` | `streamable-http` | Transport protocol (stdio, sse, streamable-http) |
+| `host` | `0.0.0.0` | Server bind address |
+| `port` | `8000` | Internal server port |
+| `path` | `/mcp` | URL path for requests |
+| `log_level` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
+
+```ini
+[server]
+transport = streamable-http
+host = 0.0.0.0
+port = 8000
+log_level = INFO
+```
 
 ### Platform Connection
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ITENTIAL_MCP_PLATFORM_HOST` | **Required** | Itential Platform hostname |
-| `ITENTIAL_MCP_PLATFORM_PORT` | `0` | Platform port (0 = auto-detect) |
-| `ITENTIAL_MCP_PLATFORM_DISABLE_TLS` | `false` | Disable HTTPS |
-| `ITENTIAL_MCP_PLATFORM_DISABLE_VERIFY` | `false` | Skip certificate verification |
-| `ITENTIAL_MCP_PLATFORM_TIMEOUT` | `30` | Connection timeout (seconds) |
+Configure in the `[platform]` section of `itential-mcp.conf`:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `host` | **Required** | Itential Platform hostname |
+| `port` | `0` | Platform port (0 = auto-detect) |
+| `disable_tls` | `false` | Disable HTTPS |
+| `disable_verify` | `false` | Skip certificate verification |
+| `timeout` | `30` | Connection timeout (seconds) |
+
+```ini
+[platform]
+host = your-platform-host.com
+port = 443
+disable_tls = false
+timeout = 30
+```
 
 ### Authentication
 
 **OAuth (Recommended):**
-```bash
-ITENTIAL_MCP_PLATFORM_CLIENT_ID=your-client-id
-ITENTIAL_MCP_PLATFORM_CLIENT_SECRET=your-client-secret
+```ini
+[platform]
+client_id = your-oauth-client-id
+client_secret = your-oauth-client-secret
 ```
 
 **Basic Auth (Alternative):**
-```bash
-ITENTIAL_MCP_PLATFORM_USER=admin
-ITENTIAL_MCP_PLATFORM_PASSWORD=admin
+```ini
+[platform]
+user = admin
+password = admin
 ```
 
 ### Tool Filtering
 
-```bash
+```ini
+[server]
 # Include only specific tools
-ITENTIAL_MCP_SERVER_INCLUDE_TAGS=workflows,devices,jobs
+include_tags = workflows,devices,jobs
 
 # Exclude experimental tools
-ITENTIAL_MCP_SERVER_EXCLUDE_TAGS=experimental,beta,deprecated
+exclude_tags = experimental,beta,deprecated
 ```
 
 ## 🌐 Access URLs
 
 Once deployed, the MCP server is accessible at:
 
-- **External (from host)**: `http://localhost:8000/sse`
-- **Internal (from other containers)**: `http://itential-mcp:8000/sse`
-- **Health Check**: `http://localhost:8000/health`
+- **External (from host)**: `http://localhost:8000/mcp`
+- **Internal (from other containers)**: `http://itential-mcp:8000/mcp`
+- **Health Check**: `http://localhost:8000/mcp/health`
 
 ## 📊 Available Tools
 
@@ -122,7 +141,7 @@ For a complete list of available tools and their documentation, see the [main pr
 ### Health Check Endpoint
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8000/mcp/health
 ```
 
 ### Container Health
@@ -153,8 +172,8 @@ docker-compose exec itential-mcp ps aux
 ### Development Mode
 
 ```bash
-# Enable debug logging
-echo "ITENTIAL_MCP_SERVER_LOG_LEVEL=DEBUG" >> .env
+# Enable debug logging in itential-mcp.conf
+sed -i 's/log_level = INFO/log_level = DEBUG/' itential-mcp.conf
 
 # Restart with new config
 docker-compose restart itential-mcp
@@ -169,11 +188,11 @@ docker-compose logs -f itential-mcp
 # Access container shell
 docker-compose exec itential-mcp /bin/bash
 
-# Test platform connectivity
-docker-compose exec itential-mcp curl -k https://$ITENTIAL_MCP_PLATFORM_HOST/health
+# Test platform connectivity (get host from config)
+docker-compose exec itential-mcp curl -k https://your-platform-host.com/health
 
-# Check environment variables
-docker-compose exec itential-mcp env | grep ITENTIAL
+# Check configuration
+docker-compose exec itential-mcp cat /app/itential-mcp.conf
 ```
 
 ### Local Development
@@ -324,13 +343,13 @@ services:
 
 ### LLM Integration
 
-```python
+```json
 # Example: Claude Desktop integration
 {
   "mcpServers": {
     "itential": {
       "command": "curl",
-      "args": ["-X", "POST", "http://localhost:8000/sse"]
+      "args": ["-X", "POST", "http://localhost:8000/mcp"]
     }
   }
 }
@@ -341,7 +360,7 @@ services:
 ```nginx
 # Nginx reverse proxy
 location /mcp/ {
-    proxy_pass http://itential-mcp:8000/;
+    proxy_pass http://itential-mcp:8000/mcp/;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
 }
