@@ -13,7 +13,41 @@ This directory contains Docker Compose configuration for deploying the Itential 
 
 ## 🚀 Quick Start
 
-### 1. Clone and Setup
+### Option 1: Automated Setup (Recommended)
+
+Use the provided start script for a fully automated setup:
+
+```bash
+# Clone the repository
+git clone https://github.com/itential/itential-mcp.git
+cd itential-mcp/itential-mcp-docker
+
+# Run the automated setup script
+./start.sh
+```
+
+The script will:
+- ✅ Check all prerequisites (Docker, Docker Compose)
+- ✅ Create configuration from template
+- ✅ Prompt for your Itential Platform details
+- ✅ Build and start the Docker containers
+- ✅ Verify service health
+- ✅ Display connection URLs and useful commands
+
+**Script Options:**
+```bash
+./start.sh -d                    # Enable debug logging
+./start.sh -c my-config.conf     # Use existing config file
+./start.sh --no-build            # Skip Docker build
+./start.sh --no-start            # Setup only, don't start
+./start.sh --help                # Show all options
+```
+
+### Option 2: Manual Setup
+
+If you prefer manual setup:
+
+#### 1. Clone and Setup
 
 ```bash
 # Clone the repository
@@ -24,7 +58,7 @@ cd itential-mcp/itential-mcp-docker
 cp itential-mcp.conf.example itential-mcp.conf
 ```
 
-### 2. Configure Server
+#### 2. Configure Server
 
 Edit the `itential-mcp.conf` file with your Itential Platform details:
 
@@ -38,7 +72,7 @@ client_id = your-oauth-client-id
 client_secret = your-oauth-client-secret
 ```
 
-### 3. Deploy
+#### 3. Deploy
 
 ```bash
 # Build and start the service
@@ -48,7 +82,7 @@ docker-compose up -d
 docker-compose logs -f itential-mcp
 
 # Check health
-curl http://localhost:8000/mcp/health
+curl http://localhost:8000/health
 ```
 
 ## 🔧 Configuration Options
@@ -128,7 +162,7 @@ Once deployed, the MCP server is accessible at:
 
 - **External (from host)**: `http://localhost:8000/mcp`
 - **Internal (from other containers)**: `http://itential-mcp:8000/mcp`
-- **Health Check**: `http://localhost:8000/mcp/health`
+- **Health Check**: `http://localhost:8000/health`
 
 ## 📊 Available Tools
 
@@ -141,7 +175,7 @@ For a complete list of available tools and their documentation, see the [main pr
 ### Health Check Endpoint
 
 ```bash
-curl http://localhost:8000/mcp/health
+curl http://localhost:8000/health
 ```
 
 ### Container Health
